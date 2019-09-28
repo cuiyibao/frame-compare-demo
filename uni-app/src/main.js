@@ -1,10 +1,6 @@
 import Vue from 'vue'
 import App from './App'
 
-//#ifdef MP-WEIXIN
-    require('utils/perf.js')
-//#endif
-
 Vue.config.productionTip = false
 
 App.mpType = 'app'

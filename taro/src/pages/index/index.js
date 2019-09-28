@@ -1,123 +1,18 @@
-<style>
-.date-wrp {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  background: #f5f5f5;
-  font-size: 30rpx;
-  padding-top: 10rpx;
-  padding-bottom: 10rpx;
-}
-/* pages/dateSelect/dateSelect.wxss */
-.date-day {
-  display: flex;
-  padding: 5px;
-  text-align: center;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-}
-.date-day.bgitem {
-  background-color: #d8ecf9;
-}
-.date-day.active {
-  background: #099fde;
-  color: #fff;
-}
-.date-day.unavailable {
-  color: #aaa;
-}
-
-.date-week {
-  display: flex;
-  justify-content: center;
-  align-content: center;
-  margin: 5px;
-}
-.week {
-  color: #099fde;
-}
-.row {
-  display: flex;
-  flex-direction: row;
-}
-.item-days {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-size: 35rpx;
-}
-.bgwhite {
-  background-color: #fff;
-}
-</style>
-<template>
- <!-- <view class="date-wrp">
-    <view class="layout-flex row" style="background-color: #F5F5F5">
-      <repeat class="date-week" style="{{ width: systemInfo.windowWidth/7-10 , height: 20 }}" for="{{weekStr}}" key="index">
-        <text v-if="{{item !=='日' && item !=='六'}}">{{item}}</text>
-        <text v-if="{{item ==='日' || item ==='六'}}" class="week">{{item}}</text>
-      </repeat>
-    </view>
-  </view>
-  <view style="margin-top:50px"></view>
-  <repeat for="{{dateList}}" key="index" item="dateItem" style="padding:30rpx 0">
-    <view class="date-year-month" style="text-align: center;font-size:35rpx;">
-      {{dateItem.year}}年{{dateItem.month}}月
-    </view>
-    <view class="layout-flex row" style="flex-wrap: wrap;margin-top:30rpx;">
-      <view class="date-day {{item.day<=0?'bgwhite':item.class}}" style="width:{{systemInfo.windowWidth/7-10}}px;height:{{systemInfo.windowWidth/7}}px;" data-year="{{dateItem.year}}" data-month="{{dateItem.month}}" data-day="{{item.day}}" bindtap="onPressDate" v-for="{{dateItem.days}}" v-key="{{index}}">
-        <view class='item-days'>
-          <text style='font-size:28rpx;'>{{item.day>0?(item.daytext?item.daytext:item.day):''}}</text>
-        </view>
-      </view>
-    </view>
-  </repeat> -->
-<view class="date-wrp">
-  <view class="layout-flex row" style="background-color: #F5F5F5;">
-    <text class="date-week" style="width: {{dayW}}px;height:20px}" wx:for="{{weekStr}}" wx:key="{{index}}">
-      <text wx:if="{{item !=='日' && item !=='六'}}">{{item}}</text>
-      <text wx:if="{{item ==='日' || item ==='六'}}" class="week">{{item}}</text>
-    </text>
-  </view>
-</view>
-<view style="margin-top:50px"></view>
-<view wx:for="{{dateList}}" wx:key="{{index}}" wx:for-item="dateItem" style="padding:30rpx 0">
-  <view class="date-year-month" style="text-align: center;font-size:35rpx;">
-    {{dateItem.year}}年{{dateItem.month}}月
-  </view>
-  <view class="layout-flex row" style="flex-wrap: wrap;margin-top:30rpx;">
-    <view class="date-day {{item.day<=0?'bgwhite':item.class}}" style="width:{{dayW}}px;height:{{systemInfo.windowWidth/7}}px;" data-year="{{dateItem.year}}" data-month="{{dateItem.month}}" data-day="{{item.day}}" bindtap="onPressDate" wx:for="{{dateItem.days}}" wx:key="{{index}}">
-      <view class='item-days'>
-        <text style='font-size:28rpx;'>{{item.day>0?(item.daytext?item.daytext:item.day):''}}</text>
-        <!-- <text style='font-size:30rpx;' wx:if="{{item.inday}}">入住</text>
-        <text style='font-size:30rpx;' wx:if="{{item.outday}}">离店</text> -->
-      </view>
-    </view>
-  </view>
-</view>
-</template>
-
-<script>
-import wepy from 'wepy'
-import Moment from '../utils/moment.js'
+import { Block, View, Text } from '@tarojs/components'
+import Taro from '@tarojs/taro'
+import './index.scss'
+import Moment from '../../utils/moment'
 
 var DATE_LIST = []
 var DATE_YEAR = new Date().getFullYear()
 var DATE_MONTH = new Date().getMonth() + 1
 var DATE_DAY = new Date().getDate()
 
-export default class Index extends wepy.page {
-  config = {
-    enablePullDownRefresh: true,
-    usingComponents: {}
-  }
-  data = {
+class _C extends Taro.Component {
+  state = {
     maxMonth: 7, //最多渲染月数
     dateList: [],
     systemInfo: {},
-    dayW: 0,
     weekStr: ['日', '一', '二', '三', '四', '五', '六'],
     markcheckInDate: false, //标记开始时间是否已经选择
     markcheckOutDate: false, //标记结束时间是否已经选择
@@ -219,29 +114,43 @@ export default class Index extends wepy.page {
       }
     ]
   }
-  onLoad() {
+  componentWillMount = (options = this.$router.params || {}) => {
     // 页面初始化 options为页面跳转所带来的参数
     this.createDateListData()
-
-    console.log(this.data.dateList)
     var _this = this
     // 页面初始化 options为页面跳转所带来的参数
 
-    var checkInDate = Moment(new Date()).format('YYYY-MM-DD')
-    var checkOutDate = Moment(new Date())
-      .add(1, 'day')
-      .format('YYYY-MM-DD')
-    wx.getSystemInfo({
+    var checkInDate = options.checkInDate
+      ? options.checkInDate
+      : Moment(new Date()).format('YYYY-MM-DD')
+    var checkOutDate = options.checkOutDate
+      ? options.checkOutDate
+      : Moment(new Date())
+          .add(1, 'day')
+          .format('YYYY-MM-DD')
+    Taro.getSystemInfo({
       success: function(res) {
-        _this.dayW = res.windowWidth/7-10
-        _this.$apply()
+        _this.setState({
+          systemInfo: res,
+          checkInDate: checkInDate,
+          checkOutDate: checkOutDate
+        })
       }
     })
   }
-  methods = {}
-  selectDataMarkLine() {
-    let dateList = this.data.dateList
-    let { checkInDate, checkOutDate } = wx.getStorageSync('ROOM_SOURCE_DATE')
+  componentDidMount = () => {
+    // 页面渲染完成
+  }
+  componentDidShow = () => {}
+  componentDidHide = () => {
+    // 页面隐藏
+  }
+  componentWillUnmount = () => {
+    // 页面关闭
+  }
+  selectDataMarkLine = () => {
+    let dateList = this.state.dateList
+    let { checkInDate, checkOutDate } = Taro.getStorageSync('ROOM_SOURCE_DATE')
     let curreInid =
       checkInDate.substr(0, 4) +
       '-' +
@@ -329,12 +238,11 @@ export default class Index extends wepy.page {
         }
       }
     }
-    this.setData({
+    this.setState({
       dateList: dateList
     })
   }
-
-  createDateListData() {
+  createDateListData = () => {
     var dateList = []
     var now = new Date()
     /*
@@ -343,9 +251,9 @@ export default class Index extends wepy.page {
         原因是由于2月份没有31号，顺推下去变成了了03-03
     */
     now = new Date(now.getFullYear(), now.getMonth(), 1)
-    for (var i = 0; i < this.data.maxMonth; i++) {
+    for (var i = 0; i < this.state.maxMonth; i++) {
       var momentDate = Moment(now).add(
-        this.data.maxMonth - (this.data.maxMonth - i),
+        this.state.maxMonth - (this.state.maxMonth - i),
         'month'
       ).date
       var year = momentDate.getFullYear()
@@ -376,30 +284,21 @@ export default class Index extends wepy.page {
 
       dateList.push(dateItem)
     }
-    this.dateList = dateList
-    this.$apply()
+    this.setState({
+      dateList: dateList
+    })
     DATE_LIST = dateList
   }
-
-  /*
-	 * 获取月的总天数
-	 */
-  getTotalDayByMonth(year, month) {
+  getTotalDayByMonth = (year, month) => {
     month = parseInt(month, 10)
     var d = new Date(year, month, 0)
     return d.getDate()
   }
-  /*
-	 * 获取月的第一天是星期几
-	 */
-  getWeek(year, month, day) {
+  getWeek = (year, month, day) => {
     var d = new Date(year, month - 1, day)
     return d.getDay()
   }
-  /**
-   * 点击日期事件
-   */
-  onPressDate(e) {
+  onPressDate = e => {
     var { year, month, day } = e.currentTarget.dataset
     //当前选择的日期为同一个月并小于今天，或者点击了空白处（即day<0），不执行
     if ((day < DATE_DAY && month == DATE_MONTH) || day <= 0) return
@@ -414,46 +313,46 @@ export default class Index extends wepy.page {
 
     //如果点击选择的日期A小于入住时间，则重新渲染入住时间为A
     if (
-      (this.data.markcheckInDate &&
-        Moment(date).before(this.data.checkInDate)) ||
-      this.data.checkInDate === date
+      (this.state.markcheckInDate &&
+        Moment(date).before(this.state.checkInDate)) ||
+      this.state.checkInDate === date
     ) {
-      this.setData({
+      this.setState({
         markcheckInDate: false,
         markcheckOutDate: false,
         dateList: DATE_LIST.concat()
       })
     }
 
-    if (!this.data.markcheckInDate) {
-      this.setData({
+    if (!this.state.markcheckInDate) {
+      this.setState({
         checkInDate: date,
         markcheckInDate: true,
         dateList: DATE_LIST.concat()
       })
-    } else if (!this.data.markcheckOutDate) {
-      this.setData({
+    } else if (!this.state.markcheckOutDate) {
+      this.setState({
         checkOutDate: date,
         markcheckOutDate: true
       })
       //设缓存，返回页面时，可在onShow时获取缓存起来的日期
-      wx.setStorage({
+      Taro.setStorage({
         key: 'ROOM_SOURCE_DATE',
         data: {
-          checkInDate: this.data.checkInDate,
-          checkOutDate: this.data.checkOutDate
+          checkInDate: this.state.checkInDate,
+          checkOutDate: this.state.checkOutDate
         }
       })
-      wx.navigateBack({
+      Taro.navigateBack({
         delta: 1 // 回退前 delta(默认为1) 页面
       })
     }
 
-    this.renderPressStyle(year, month, day)
+    this.PressStyle(year, month, day)
   }
-  renderPressStyle(year, month, day) {
+  PressStyle = (year, month, day) => {
     this.createDateListData() //重新点击时数据初始化
-    var dateList = this.data.dateList
+    var dateList = this.state.dateList
     //渲染点击样式
     for (var i = 0; i < dateList.length; i++) {
       var dateItem = dateList[i]
@@ -471,9 +370,96 @@ export default class Index extends wepy.page {
         break
       }
     }
-    this.setData({
+    this.setState({
       dateList: dateList
     })
   }
+  config = {}
+
+  render() {
+    const {
+      systemInfo: systemInfo,
+      weekStr: weekStr,
+      dateList: dateList
+    } = this.state
+    return (
+      <Block>
+        <View style="position:fixed;top:0;background:#F5F5F5;font-size: 30rpx; padding-top: 10rpx;padding-bottom: 10rpx;">
+          <View className="layout-flex row" style="background-color: #F5F5F5;">
+            {weekStr.map((item, index) => {
+              return (
+                <Text
+                  className="date-week"
+                  style={
+                    'width:' +
+                    (systemInfo.windowWidth / 7 - 10) +
+                    'px;height:20px'
+                  }
+                  key={index}
+                >
+                  {item !== '日' && item !== '六' && <Text>{item}</Text>}
+                  {(item === '日' || item === '六') && (
+                    <Text className="week">{item}</Text>
+                  )}
+                </Text>
+              )
+            })}
+          </View>
+        </View>
+        <View style="margin-top:50px"></View>
+        {dateList.map((dateItem, index) => {
+          return (
+            <View key={index} style="padding:30rpx 0">
+              <View
+                className="date-year-month"
+                style="text-align: center;font-size:35rpx;"
+              >
+                {dateItem.year + '年' + dateItem.month + '月'}
+              </View>
+              <View
+                className="layout-flex row"
+                style="flex-wrap: wrap;margin-top:30rpx;"
+              >
+                {dateItem.days.map((item, index) => {
+                  return (
+                    <View
+                      className={
+                        'date-day ' + (item.day <= 0 ? 'bgwhite' : item.class)
+                      }
+                      style={
+                        'width:' +
+                        (systemInfo.windowWidth / 7 - 10) +
+                        'px;height:' +
+                        systemInfo.windowWidth / 7 +
+                        'px;'
+                      }
+                      data-year={dateItem.year}
+                      data-month={dateItem.month}
+                      data-day={item.day}
+                      onClick={this.onPressDate}
+                      key={index}
+                    >
+                      <View className="item-days">
+                        <Text style="font-size:28rpx;">
+                          {item.day > 0
+                            ? item.daytext
+                              ? item.daytext
+                              : item.day
+                            : ''}
+                        </Text>
+                        {/*  <text style='font-size:30rpx;' wx:if="{{item.inday}}">入住</text>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                               <text style='font-size:30rpx;' wx:if="{{item.outday}}">离店</text>  */}
+                      </View>
+                    </View>
+                  )
+                })}
+              </View>
+            </View>
+          )
+        })}
+      </Block>
+    )
+  }
 }
-</script>
+
+export default _C

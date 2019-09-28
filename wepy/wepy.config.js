@@ -8,10 +8,6 @@ module.exports = {
   build: {
   },
   resolve: {
-    alias: {
-      counter: path.join(__dirname, 'src/components/counter'),
-      '@': path.join(__dirname, 'src')
-    },
     aliasFields: ['wepy', 'weapp'],
     modules: ['node_modules']
   },
@@ -19,9 +15,6 @@ module.exports = {
     less: {
       compress: prod
     },
-    /*sass: {
-      outputStyle: 'compressed'
-    },*/
     babel: {
       sourceMap: true,
       presets: [
@@ -35,35 +28,37 @@ module.exports = {
       ]
     }
   },
-  plugins: {
-  },
+  plugins: [],
   appConfig: {
     noPromiseAPI: ['createSelectorQuery']
   }
 }
 
-if (prod) {
+// const path = require('path');
+// var prod = process.env.NODE_ENV === 'production';
 
-  // 压缩sass
-  // module.exports.compilers['sass'] = {outputStyle: 'compressed'}
+// if (prod) {
 
-  // 压缩js
-  module.exports.plugins = {
-    uglifyjs: {
-      filter: /\.js$/,
-      config: {
-      }
-    },
-    imagemin: {
-      filter: /\.(jpg|png|jpeg)$/,
-      config: {
-        jpg: {
-          quality: 80
-        },
-        png: {
-          quality: 80
-        }
-      }
-    }
-  }
-}
+//   // 压缩sass
+//   // module.exports.compilers['sass'] = {outputStyle: 'compressed'}
+
+//   // 压缩js
+//   module.exports.plugins = {
+//     uglifyjs: {
+//       filter: /\.js$/,
+//       config: {
+//       }
+//     },
+//     imagemin: {
+//       filter: /\.(jpg|png|jpeg)$/,
+//       config: {
+//         jpg: {
+//           quality: 80
+//         },
+//         png: {
+//           quality: 80
+//         }
+//       }
+//     }
+//   }
+// }
